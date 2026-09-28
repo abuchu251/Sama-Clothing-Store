@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sami Clothings — Class Kit Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+:root{
+  --bg:#F5F2EC; --panel:#FFFFFF; --ink:#1A1712; --sub:#6B655A;
+  --line:#E3DED2; --accent:#C99A3B; --accent-ink:#1A1712; --stage:#EAE5D8;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+:root:not([data-theme="light"]){ @media (prefers-color-scheme: dark){
+  --bg:#15130F; --panel:#1D1A14; --ink:#F2EEE3; --sub:#9A9384; --line:#332E24; --accent:#D9AE4E; --accent-ink:#15130F; --stage:#0F0D0A;
+}}
+:root[data-theme="dark"]{ --bg:#15130F; --panel:#1D1A14; --ink:#F2EEE3; --sub:#9A9384; --line:#332E24; --accent:#D9AE4E; --accent-ink:#15130F; --stage:#0F0D0A; }
+*{box-sizing:border-box;}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Work Sans',sans-serif;scroll-behavior:smooth;}
+h1,h2,h3,.display{font-family:'Anton',sans-serif;font-weight:400;letter-spacing:.01em;}
+a{color:inherit;}
+.nav{position:sticky;top:0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:16px 28px;background:var(--bg);border-bottom:1px solid var(--line);padding-top:calc(16px + env(safe-area-inset-top,0px));}
+.logo{font-family:'Anton',sans-serif;font-size:20px;letter-spacing:.03em;}
+.logo span{color:var(--accent);}
+.navlinks{display:flex;gap:22px;align-items:center;font-size:14px;}
+.navlinks a{text-decoration:none;color:var(--sub);}
+.navlinks a:hover{color:var(--ink);}
+@media (max-width:700px){.navlinks a.hide-mobile{display:none;}}
+.theme-btn{background:none;border:1px solid var(--line);color:var(--ink);border-radius:20px;padding:7px 14px;font-size:13px;cursor:pointer;font-family:'Work Sans',sans-serif;}
+
+.hero{display:grid;grid-template-columns:1.15fr 1fr;min-height:calc(100vh - 60px);}
+@media (max-width:880px){.hero{grid-template-columns:1fr;}}
+.stage{background:var(--stage);display:flex;flex-direction:column;padding:20px 20px 6px;position:relative;}
+.stage-canvas-wrap{flex:1;min-height:420px;position:relative;border-radius:14px;overflow:hidden;}
+.stage-canvas-wrap canvas{width:100%!important;height:100%!important;display:block;cursor:grab;touch-action:none;}
+.stage-hint{text-align:center;font-size:12px;color:var(--sub);padding:10px 0 18px;}
+
+.panel{padding:32px 28px 40px;max-width:520px;margin:0 auto;width:100%;}
+.eyebrow{color:var(--sub);font-size:13px;margin:0 0 4px;}
+h1{font-size:32px;margin:0 0 6px;line-height:1.05;}
+.lede{color:var(--sub);font-size:14px;margin:0 0 26px;max-width:42ch;}
+.section{margin-bottom:24px;}
+.section h2{font-size:13px;font-weight:600;margin:0 0 10px;}
+.row{display:flex;flex-wrap:wrap;gap:8px;}
+.opt{border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:9px 16px;border-radius:8px;font-size:14px;cursor:pointer;}
+.opt.active{border-color:var(--ink);background:var(--ink);color:var(--bg);}
+.swatches{display:flex;flex-wrap:wrap;gap:12px;align-items:center;}
+.swatch{width:44px;text-align:center;cursor:pointer;background:none;border:none;padding:0;}
+.swatch .dot{width:34px;height:34px;border-radius:50%;border:2px solid transparent;margin:0 auto 5px;}
+.swatch.active .dot{box-shadow:0 0 0 2px var(--bg),0 0 0 3px var(--ink);}
+.swatch .hex{font-size:9px;color:var(--sub);}
+.custom-color{display:flex;flex-direction:column;align-items:center;gap:5px;width:44px;}
+.custom-color input[type=color]{width:34px;height:34px;border:none;border-radius:50%;padding:0;background:none;cursor:pointer;}
+.custom-color span{font-size:9px;color:var(--sub);}
+input[type=text]{width:100%;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:12px 14px;font-size:15px;font-family:'Work Sans',sans-serif;}
+input[type=text]:focus{outline:2px solid var(--accent);outline-offset:1px;}
+.hint{font-size:12px;color:var(--sub);margin-top:6px;}
+.summary{border-top:1px solid var(--line);padding-top:16px;font-size:14px;margin-bottom:20px;}
+.summary div{display:flex;justify-content:space-between;padding:4px 0;color:var(--sub);}
+.summary div b{color:var(--ink);font-weight:600;}
+.cta{background:var(--accent);color:var(--accent-ink);border:none;padding:14px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;width:100%;}
+.cta:active{transform:translateY(1px);}
+
+.services{padding:80px 28px;max-width:1100px;margin:0 auto;}
+.services .eyebrow{text-align:center;}
+.services h2.display{text-align:center;font-size:34px;margin:0 0 44px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;}
+@media (max-width:880px){.grid4{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:520px){.grid4{grid-template-columns:1fr;}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px 20px;}
+.card .num{font-family:'Anton',sans-serif;color:var(--accent);font-size:22px;}
+.card h3{font-size:17px;margin:8px 0 8px;}
+.card p{font-size:13.5px;color:var(--sub);line-height:1.5;margin:0;}
+
+.about{background:var(--panel);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:70px 28px;}
+.about-in{max-width:640px;margin:0 auto;text-align:center;}
+.about h2.display{font-size:30px;margin:0 0 14px;}
+.about p{color:var(--sub);font-size:15px;line-height:1.6;}
+
+footer{padding:50px 28px 40px;max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:24px;font-size:13px;color:var(--sub);}
+footer .fcol b{display:block;color:var(--ink);font-family:'Anton',sans-serif;font-size:16px;margin-bottom:8px;font-weight:400;}
+footer a{text-decoration:underline;}
+
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:30;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--panel);border-radius:12px;padding:26px;max-width:400px;width:100%;}
+.modal h2{font-family:'Anton',sans-serif;font-size:22px;font-weight:400;margin:0 0 4px;}
+.modal p{color:var(--sub);font-size:13px;margin:0 0 18px;}
+.modal label{font-size:13px;font-weight:600;display:block;margin:14px 0 6px;}
+.modal-actions{display:flex;gap:10px;margin-top:22px;}
+.modal-actions button{flex:1;padding:12px;border-radius:8px;font-size:14px;cursor:pointer;font-family:'Work Sans',sans-serif;}
+.btn-cancel{background:none;border:1px solid var(--line);color:var(--ink);}
+.btn-go{background:var(--accent);border:none;color:var(--accent-ink);font-weight:600;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="logo">SAMI <span>CLOTHINGS</span></div>
+  <div class="navlinks">
+    <a href="#build" class="hide-mobile">Build your kit</a>
+    <a href="#services" class="hide-mobile">Services</a>
+    <a href="#about" class="hide-mobile">About</a>
+    <button class="theme-btn" id="themeBtn">Dark mode</button>
+  </div>
+</nav>
+
+<section class="hero" id="build">
+  <div class="stage">
+    <div class="stage-canvas-wrap" id="stageWrap"></div>
+    <div class="stage-hint">Drag to rotate &middot; view in 3D</div>
+  </div>
+  <div class="panel">
+    <p class="eyebrow">Senior class kits</p>
+    <h1>Dress the mannequin.</h1>
+    <p class="lede">Pick a piece, a size, any colour you like and your batch name — check it in 3D before you order.</p>
+
+    <div class="section">
+      <h2>Garment</h2>
+      <div class="row" id="garmentOpts">
+        <button class="opt active" data-g="tee">T-Shirt</button>
+        <button class="opt" data-g="sweater">Sweater</button>
+        <button class="opt" data-g="hoodie">Hoodie</button>
+        <button class="opt" data-g="jacket">Jacket</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Size</h2>
+      <div class="row" id="sizeOpts">
+        <button class="opt active" data-s="S">S</button>
+        <button class="opt" data-s="M">M</button>
+        <button class="opt" data-s="L">L</button>
+        <button class="opt" data-s="XL">XL</button>
+        <button class="opt" data-s="XXL">XXL</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Colour</h2>
+      <div class="swatches" id="colorOpts"></div>
+    </div>
+
+    <div class="section">
+      <h2>Batch name</h2>
+      <input type="text" id="batchInput" maxlength="18" value="CLASS OF 26" placeholder="e.g. CLASS OF 26">
+      <p class="hint">One or two words, printed on the chest.</p>
+    </div>
+
+    <div class="summary" id="summary"></div>
+    <button class="cta" id="orderBtn">Order this kit</button>
+  </div>
+</section>
+
+<section class="services" id="services">
+  <p class="eyebrow" style="text-align:center;">What we do</p>
+  <h2 class="display">Print, stitch, finish.</h2>
+  <div class="grid4">
+    <div class="card"><div class="num">01</div><h3>Screen printing</h3><p>Bold, durable batch designs for class tees and event runs, printed in bulk at consistent quality.</p></div>
+    <div class="card"><div class="num">02</div><h3>DTF printing</h3><p>Full-colour, fine-detail transfers that hold up on hoodies and jackets through years of wear.</p></div>
+    <div class="card"><div class="num">03</div><h3>Engraving</h3><p>Name tags, patches and finishing touches that make a school kit feel personal, not generic.</p></div>
+    <div class="card"><div class="num">04</div><h3>Sublimation</h3><p>All-over colour and pattern work for sports kits, house colours and event uniforms.</p></div>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="about-in">
+    <p class="eyebrow">About Sami Clothings</p>
+    <h2 class="display">Made for the class, not the catalogue.</h2>
+    <p>We work with graduating classes, schools and event organisers across Ethiopia to build batch clothing from scratch — t-shirts, sweaters, hoodies and jackets your class actually wants to wear all year, in your own colours and your own design.</p>
+  </div>
+</section>
+
+<footer id="contact">
+  <div class="fcol"><b>SAMI CLOTHINGS</b>Custom class &amp; event wear, made in Ethiopia.</div>
+  <div class="fcol"><b>Order</b>Telegram: <a href="https://t.me/sami_12321" target="_blank">@sami_12321</a></div>
+  <div class="fcol"><b>Services</b>Screen print &middot; DTF &middot; Engraving &middot; Sublimation</div>
+  <div class="fcol">&copy; 2026 Sami Clothings</div>
+</footer>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2>Almost there</h2>
+    <p>This opens a chat on Telegram with your kit details pre-filled.</p>
+    <label for="schoolInput">School name</label>
+    <input type="text" id="schoolInput" placeholder="e.g. Bole Community School">
+    <label for="phoneInput">Phone number</label>
+    <input type="text" id="phoneInput" placeholder="e.g. 09xx xxx xxx">
+    <label for="qtyInput">Quantity (optional)</label>
+    <input type="text" id="qtyInput" placeholder="e.g. 40 pieces">
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modalCancel">Cancel</button>
+      <button class="btn-go" id="modalGo">Continue to Telegram</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TELEGRAM_USERNAME = "sami_12321";
+const COLORS = [
+  {name:"Black",hex:"#1A1A1A"},{name:"White",hex:"#F2EFE9"},
+  {name:"Red",hex:"#C1272D"},{name:"Blue",hex:"#1F5FA6"},
+  {name:"Green",hex:"#2F6B4F"},{name:"Yellow",hex:"#D9AE4E"},
+  {name:"Maroon",hex:"#7A2331"},{name:"Grey",hex:"#6B655A"}
+];
+const state = {garment:"tee", size:"S", color:"#1A1A1A", batch:"CLASS OF 26"};
+
+// ---- 3D scene ----
+const wrap = document.getElementById('stageWrap');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+camera.position.set(0, 0.3, 7);
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+wrap.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const key = new THREE.DirectionalLight(0xffffff, 0.9); key.position.set(3,5,4); scene.add(key);
+const rim = new THREE.PointLight(0xffffff, 0.5); rim.position.set(-4,2,-3); scene.add(rim);
+
+const skinMat = new THREE.MeshStandardMaterial({color:0xE4B896, roughness:0.9});
+const fabricMat = new THREE.MeshStandardMaterial({color: state.color, roughness:0.85, metalness:0.05});
+
+const root = new THREE.Group(); scene.add(root);
+
+// head + neck (mannequin form)
+const head = new THREE.Mesh(new THREE.SphereGeometry(0.42,24,24), skinMat);
+head.position.set(0,2.35,0); head.scale.set(1,1.15,0.92); root.add(head);
+const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.22,0.35,16), skinMat);
+neck.position.set(0,1.9,0); root.add(neck);
+
+// torso via lathe (dress-form silhouette)
+const pts = [[0.05,-2.0],[0.72,-1.95],[0.78,-1.3],[0.62,-0.5],[0.78,0.3],[0.85,0.95],[0.7,1.35],[0.4,1.55],[0.3,1.7]].map(p=>new THREE.Vector2(p[0],p[1]));
+const torso = new THREE.Mesh(new THREE.LatheGeometry(pts,32), fabricMat);
+root.add(torso);
+
+function segment(len, rTop, rBot, mat){
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rTop,rBot,len,12), mat);
+  m.position.y = -len/2;
+  return m;
+}
+function buildArm(side, long){
+  const shoulder = new THREE.Group();
+  shoulder.position.set(side*0.64, 1.28, 0.02);
+  shoulder.rotation.z = side*0.16;
+  shoulder.rotation.x = -0.04;
+  const upperLen = 0.85;
+  shoulder.add(segment(upperLen, 0.165, 0.135, fabricMat));
+  const elbow = new THREE.Group();
+  elbow.position.y = -upperLen;
+  elbow.rotation.z = side*0.07;
+  elbow.rotation.x = 0.14;
+  shoulder.add(elbow);
+  const foreLen = 0.78;
+  elbow.add(segment(foreLen, 0.13, 0.1, long ? fabricMat : skinMat));
+  const hand = new THREE.Mesh(new THREE.SphereGeometry(0.1,12,12), skinMat);
+  hand.position.y = -foreLen - 0.04;
+  hand.scale.set(1,1.3,0.7);
+  elbow.add(hand);
+  return shoulder;
+}
+const sleevesShort = new THREE.Group(); sleevesShort.add(buildArm(1,false)); sleevesShort.add(buildArm(-1,false)); root.add(sleevesShort);
+const sleevesLong = new THREE.Group(); sleevesLong.add(buildArm(1,true)); sleevesLong.add(buildArm(-1,true)); root.add(sleevesLong);
+
+const hood = new THREE.Mesh(new THREE.SphereGeometry(0.5,20,20,0,Math.PI*2,0,Math.PI/1.6), fabricMat);
+hood.position.set(0,2.05,-0.2); hood.rotation.x = 0.3; root.add(hood);
+
+const collar = new THREE.Group();
+const lapelGeo = new THREE.BoxGeometry(0.32,0.5,0.06);
+const lapelL = new THREE.Mesh(lapelGeo, fabricMat); lapelL.position.set(-0.22,1.55,0.62); lapelL.rotation.z = 0.4;
+const lapelR = new THREE.Mesh(lapelGeo, fabricMat); lapelR.position.set(0.22,1.55,0.62); lapelR.rotation.z = -0.4;
+collar.add(lapelL); collar.add(lapelR); root.add(collar);
+
+function makeTextTexture(text){
+  const c = document.createElement('canvas'); c.width=512; c.height=256;
+  const ctx = c.getContext('2d');
+  ctx.font = "700 64px 'Anton', sans-serif";
+  ctx.textAlign="center"; ctx.textBaseline="middle";
+  const lum = (()=>{const h=state.color.replace('#','');const r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);return (0.299*r+0.587*g+0.114*b)/255;})();
+  ctx.fillStyle = lum>0.55 ? '#1A1712' : '#F2EEE3';
+  ctx.fillText(text.toUpperCase(), 256, 128);
+  return new THREE.CanvasTexture(c);
+}
+const textMat = new THREE.MeshBasicMaterial({map:makeTextTexture(state.batch), transparent:true});
+const textPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.1,0.55), textMat);
+textPlane.position.set(0,0.55,0.82); root.add(textPlane);
+
+function updateGarment(){
+  fabricMat.color.set(state.color);
+  const g = state.garment;
+  sleevesShort.visible = g==='tee';
+  sleevesLong.visible = g!=='tee';
+  hood.visible = g==='hoodie';
+  collar.visible = g==='jacket';
+  textMat.map.dispose();
+  textMat.map = makeTextTexture(state.batch);
+  textMat.needsUpdate = true;
+}
+updateGarment();
+
+function resize(){
+  const w = wrap.clientWidth, h = wrap.clientHeight;
+  renderer.setSize(w,h); camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize); resize();
+
+let dragging=false, lastX=0, rotY=0.4, rotX=0;
+root.rotation.y = rotY;
+function pointerDown(e){ dragging=true; lastX=(e.touches?e.touches[0].clientX:e.clientX); }
+function pointerMove(e){
+  if(!dragging) return;
+  const x=(e.touches?e.touches[0].clientX:e.clientX);
+  rotY += (x-lastX)*0.008; lastX=x; root.rotation.y = rotY;
+}
+function pointerUp(){ dragging=false; }
+renderer.domElement.addEventListener('mousedown',pointerDown);
+renderer.domElement.addEventListener('mousemove',pointerMove);
+window.addEventListener('mouseup',pointerUp);
+renderer.domElement.addEventListener('touchstart',pointerDown,{passive:true});
+renderer.domElement.addEventListener('touchmove',pointerMove,{passive:true});
+window.addEventListener('touchend',pointerUp);
+
+let idle=0;
+(function animate(){
+  requestAnimationFrame(animate);
+  if(!dragging){ idle++; if(idle>90){ root.rotation.y += 0.0025; } } else idle=0;
+  renderer.render(scene,camera);
+})();
+
+// ---- UI ----
+document.getElementById('garmentOpts').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#garmentOpts .opt').forEach(o=>o.classList.remove('active'));
+  b.classList.add('active'); state.garment=b.dataset.g; updateGarment(); renderSummary();
+});
+document.getElementById('sizeOpts').addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#sizeOpts .opt').forEach(o=>o.classList.remove('active'));
+  b.classList.add('active'); state.size=b.dataset.s; renderSummary();
+});
+const colorWrap=document.getElementById('colorOpts');
+COLORS.forEach((c,i)=>{
+  const btn=document.createElement('button');
+  btn.className='swatch'+(i===0?' active':'');
+  btn.innerHTML=`<span class="dot" style="background:${c.hex}"></span><span class="hex">${c.name}</span>`;
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active'); state.color=c.hex; updateGarment(); renderSummary();
+  });
+  colorWrap.appendChild(btn);
+});
+const customWrap=document.createElement('div'); customWrap.className='custom-color';
+customWrap.innerHTML = `<input type="color" id="customColor" value="#1A1A1A"><span>Custom</span>`;
+colorWrap.appendChild(customWrap);
+document.getElementById('customColor').addEventListener('input', e=>{
+  document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+  state.color=e.target.value; updateGarment(); renderSummary();
+});
+document.getElementById('batchInput').addEventListener('input', e=>{
+  state.batch = e.target.value || "CLASS OF 26"; updateGarment(); renderSummary();
+});
+function renderSummary(){
+  document.getElementById('summary').innerHTML =
+    `<div><span>Garment</span><b>${state.garment[0].toUpperCase()+state.garment.slice(1)}</b></div>
+     <div><span>Size</span><b>${state.size}</b></div>
+     <div><span>Colour</span><b>${state.color}</b></div>
+     <div><span>Batch</span><b>${state.batch.toUpperCase()}</b></div>`;
+}
+renderSummary();
+
+const root_ = document.documentElement, themeBtn=document.getElementById('themeBtn');
+function applyTheme(t){
+  root_.setAttribute('data-theme', t);
+  themeBtn.textContent = t==='dark' ? 'Light mode' : 'Dark mode';
+  try{ localStorage.setItem('kitTheme', t); }catch(e){}
+}
+let savedTheme='light';
+try{ savedTheme = localStorage.getItem('kitTheme') || 'light'; }catch(e){}
+applyTheme(savedTheme);
+themeBtn.addEventListener('click', ()=> applyTheme(root_.getAttribute('data-theme')==='dark' ? 'light' : 'dark'));
+
+const modalBg=document.getElementById('modalBg');
+document.getElementById('orderBtn').addEventListener('click', ()=> modalBg.classList.add('open'));
+document.getElementById('modalCancel').addEventListener('click', ()=> modalBg.classList.remove('open'));
+document.getElementById('modalGo').addEventListener('click', ()=>{
+  const school=document.getElementById('schoolInput').value || 'Not given';
+  const phone=document.getElementById('phoneInput').value || 'Not given';
+  const qty=document.getElementById('qtyInput').value || 'Not given';
+  const msg = `New Senior Kit order\nSchool: ${school}\nPhone: ${phone}\nGarment: ${state.garment}\nSize: ${state.size}\nColour: ${state.color}\nBatch text: ${state.batch.toUpperCase()}\nQuantity: ${qty}`;
+  window.open(`https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(msg)}`, '_blank');
+  modalBg.classList.remove('open');
+});
+</script>
+</body>
+</html>
